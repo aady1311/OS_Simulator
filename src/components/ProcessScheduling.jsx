@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 function ProcessScheduling() {
-  const [algorithm, setAlgorithm] = useState('fcfs')
+  const [algorithm, setAlgorithm] = useState('sjf')
   const [processes, setProcesses] = useState([
     { id: 'P1', arrivalTime: 0, burstTime: 5, priority: 1 },
     { id: 'P2', arrivalTime: 1, burstTime: 3, priority: 2 },
@@ -11,48 +11,16 @@ function ProcessScheduling() {
   const [results, setResults] = useState(null)
   const [ganttChart, setGanttChart] = useState([])
 
-  // FCFS Algorithm
-  const fcfsScheduling = (processes) => {
-    const sorted = [...processes].sort((a, b) => a.arrivalTime - b.arrivalTime)
-    let currentTime = 0
-    const results = []
-    const gantt = []
-
-    sorted.forEach(process => {
-      // Add idle time if CPU is idle
-      if (currentTime < process.arrivalTime) {
-        gantt.push({ processId: 'IDLE', startTime: currentTime, endTime: process.arrivalTime })
-        currentTime = process.arrivalTime
-      }
-      
-      const startTime = currentTime
-      const completionTime = startTime + process.burstTime
-      const turnaroundTime = completionTime - process.arrivalTime
-      const waitingTime = turnaroundTime - process.burstTime
-
-      results.push({
-        ...process,
-        startTime,
-        completionTime,
-        turnaroundTime,
-        waitingTime
-      })
-
-      gantt.push({ processId: process.id, startTime, endTime: completionTime })
-      currentTime = completionTime
-    })
-
-    return { results, gantt }
-  }
-
-  // SJF Algorithm
+  // SJF Algorithm with step-by-step explanation
   const sjfScheduling = (processes) => {
     const sorted = [...processes].sort((a, b) => a.arrivalTime - b.arrivalTime)
     const results = []
     const gantt = []
+    const steps = []
     let currentTime = 0
     const completed = new Set()
     let idleStart = null
+    let stepNumber = 1
 
     while (completed.size < processes.length) {
       const available = sorted.filter(p => 
@@ -65,9 +33,13 @@ function ProcessScheduling() {
         continue
       }
 
-      // Add idle time if there was any
       if (idleStart !== null) {
         gantt.push({ processId: 'IDLE', startTime: idleStart, endTime: currentTime })
+        steps.push({
+          step: stepNumber++,
+          description: `CPU was idle from time ${idleStart} to ${currentTime}`,
+          type: 'idle'
+        })
         idleStart = null
       }
 
@@ -79,6 +51,19 @@ function ProcessScheduling() {
       const completionTime = startTime + shortest.burstTime
       const turnaroundTime = completionTime - shortest.arrivalTime
       const waitingTime = turnaroundTime - shortest.burstTime
+
+      steps.push({
+        step: stepNumber++,
+        processId: shortest.id,
+        arrivalTime: shortest.arrivalTime,
+        burstTime: shortest.burstTime,
+        startTime,
+        completionTime,
+        turnaroundTime,
+        waitingTime,
+        calculation: `TAT = CT - AT = ${completionTime} - ${shortest.arrivalTime} = ${turnaroundTime}\nWT = TAT - BT = ${turnaroundTime} - ${shortest.burstTime} = ${waitingTime}`,
+        type: 'process'
+      })
 
       results.push({
         ...shortest,
@@ -93,90 +78,19 @@ function ProcessScheduling() {
       currentTime = completionTime
     }
 
-    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt }
+    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt, steps }
   }
 
-  // Round Robin Algorithm
-  const roundRobinScheduling = (processes, quantum) => {
-    const queue = [...processes].map(p => ({ ...p, remainingTime: p.burstTime }))
-    queue.sort((a, b) => a.arrivalTime - b.arrivalTime)
-    
-    const results = []
-    const gantt = []
-    let currentTime = 0
-    let i = 0
-    const readyQueue = []
-    let processIndex = 0
-
-    // Start from the earliest arrival time
-    if (queue.length > 0) {
-      currentTime = queue[0].arrivalTime
-      if (currentTime > 0) {
-        gantt.push({ processId: 'IDLE', startTime: 0, endTime: currentTime })
-      }
-    }
-
-    while (queue.some(p => p.remainingTime > 0) || readyQueue.length > 0) {
-      // Add newly arrived processes to ready queue
-      while (processIndex < queue.length && queue[processIndex].arrivalTime <= currentTime) {
-        readyQueue.push(queue[processIndex])
-        processIndex++
-      }
-
-      if (readyQueue.length === 0) {
-        // CPU is idle, advance to next process arrival
-        const nextArrival = queue.find(p => p.arrivalTime > currentTime)
-        if (nextArrival) {
-          gantt.push({ processId: 'IDLE', startTime: currentTime, endTime: nextArrival.arrivalTime })
-          currentTime = nextArrival.arrivalTime
-        }
-        continue
-      }
-
-      const process = readyQueue.shift()
-      
-      if (process.remainingTime > 0) {
-        const executeTime = Math.min(quantum, process.remainingTime)
-        const startTime = currentTime
-        process.remainingTime -= executeTime
-        currentTime += executeTime
-        
-        gantt.push({ processId: process.id, startTime, endTime: currentTime })
-
-        if (process.remainingTime === 0) {
-          const completionTime = currentTime
-          const turnaroundTime = completionTime - process.arrivalTime
-          const waitingTime = turnaroundTime - process.burstTime
-
-          results.push({
-            ...process,
-            completionTime,
-            turnaroundTime,
-            waitingTime
-          })
-        } else {
-          // Add newly arrived processes before re-adding current process
-          const tempQueue = []
-          while (processIndex < queue.length && queue[processIndex].arrivalTime <= currentTime) {
-            tempQueue.push(queue[processIndex])
-            processIndex++
-          }
-          readyQueue.push(...tempQueue, process)
-        }
-      }
-    }
-
-    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt }
-  }
-
-  // Priority Scheduling (Non-preemptive)
+  // Priority Scheduling (Non-preemptive) with step-by-step explanation
   const priorityScheduling = (processes) => {
     const sorted = [...processes].sort((a, b) => a.arrivalTime - b.arrivalTime)
     const results = []
     const gantt = []
+    const steps = []
     let currentTime = 0
     const completed = new Set()
     let idleStart = null
+    let stepNumber = 1
 
     while (completed.size < processes.length) {
       const available = sorted.filter(p => 
@@ -189,20 +103,38 @@ function ProcessScheduling() {
         continue
       }
 
-      // Add idle time if there was any
       if (idleStart !== null) {
         gantt.push({ processId: 'IDLE', startTime: idleStart, endTime: currentTime })
+        steps.push({
+          step: stepNumber++,
+          description: `CPU was idle from time ${idleStart} to ${currentTime}`,
+          type: 'idle'
+        })
         idleStart = null
       }
 
       const highest = available.reduce((max, p) => 
-        p.priority < max.priority ? p : max // Lower number = higher priority
+        p.priority < max.priority ? p : max
       )
 
       const startTime = currentTime
       const completionTime = startTime + highest.burstTime
       const turnaroundTime = completionTime - highest.arrivalTime
       const waitingTime = turnaroundTime - highest.burstTime
+
+      steps.push({
+        step: stepNumber++,
+        processId: highest.id,
+        arrivalTime: highest.arrivalTime,
+        burstTime: highest.burstTime,
+        priority: highest.priority,
+        startTime,
+        completionTime,
+        turnaroundTime,
+        waitingTime,
+        calculation: `TAT = CT - AT = ${completionTime} - ${highest.arrivalTime} = ${turnaroundTime}\nWT = TAT - BT = ${turnaroundTime} - ${highest.burstTime} = ${waitingTime}`,
+        type: 'process'
+      })
 
       results.push({
         ...highest,
@@ -217,155 +149,34 @@ function ProcessScheduling() {
       currentTime = completionTime
     }
 
-    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt }
+    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt, steps }
   }
 
-  // SRTF Algorithm (Preemptive SJF)
-  const srtfScheduling = (processes) => {
-    const queue = [...processes].map(p => ({ ...p, remainingTime: p.burstTime }))
-    const results = []
-    const gantt = []
-    let currentTime = 0
-    const completed = new Set()
 
-    while (completed.size < processes.length) {
-      const available = queue.filter(p => 
-        p.arrivalTime <= currentTime && p.remainingTime > 0
-      )
-
-      if (available.length === 0) {
-        if (gantt.length === 0 || gantt[gantt.length - 1].processId !== 'IDLE') {
-          gantt.push({ processId: 'IDLE', startTime: currentTime, endTime: currentTime + 1 })
-        } else {
-          gantt[gantt.length - 1].endTime = currentTime + 1
-        }
-        currentTime++
-        continue
-      }
-
-      const shortest = available.reduce((min, p) => 
-        p.remainingTime < min.remainingTime ? p : min
-      )
-
-      const startTime = currentTime
-      shortest.remainingTime--
-      currentTime++
-
-      if (gantt.length === 0 || gantt[gantt.length - 1].processId !== shortest.id) {
-        gantt.push({ processId: shortest.id, startTime, endTime: currentTime })
-      } else {
-        gantt[gantt.length - 1].endTime = currentTime
-      }
-
-      if (shortest.remainingTime === 0) {
-        const completionTime = currentTime
-        const turnaroundTime = completionTime - shortest.arrivalTime
-        const waitingTime = turnaroundTime - shortest.burstTime
-
-        results.push({
-          ...shortest,
-          completionTime,
-          turnaroundTime,
-          waitingTime
-        })
-        completed.add(shortest.id)
-      }
-    }
-
-    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt }
-  }
-
-  // Multilevel Queue Scheduling
-  const multilevelQueueScheduling = (processes) => {
-    // Divide processes into queues based on priority
-    const systemQueue = processes.filter(p => p.priority === 1) // Highest priority
-    const interactiveQueue = processes.filter(p => p.priority === 2)
-    const batchQueue = processes.filter(p => p.priority >= 3) // Lowest priority
-
-    const results = []
-    const gantt = []
-    let currentTime = 0
-
-    // Find the earliest arrival time
-    const allProcesses = [...systemQueue, ...interactiveQueue, ...batchQueue]
-    if (allProcesses.length > 0) {
-      const earliestArrival = Math.min(...allProcesses.map(p => p.arrivalTime))
-      if (earliestArrival > 0) {
-        gantt.push({ processId: 'IDLE', startTime: 0, endTime: earliestArrival })
-        currentTime = earliestArrival
-      }
-    }
-
-    // Process system queue first (FCFS)
-    const processQueue = (queue, queueName) => {
-      const sorted = queue.sort((a, b) => a.arrivalTime - b.arrivalTime)
-      sorted.forEach(process => {
-        // Add idle time if needed
-        if (currentTime < process.arrivalTime) {
-          gantt.push({ processId: 'IDLE', startTime: currentTime, endTime: process.arrivalTime })
-          currentTime = process.arrivalTime
-        }
-        
-        const startTime = currentTime
-        const completionTime = startTime + process.burstTime
-        const turnaroundTime = completionTime - process.arrivalTime
-        const waitingTime = turnaroundTime - process.burstTime
-
-        results.push({
-          ...process,
-          startTime,
-          completionTime,
-          turnaroundTime,
-          waitingTime,
-          queue: queueName
-        })
-
-        gantt.push({ processId: process.id, startTime, endTime: completionTime })
-        currentTime = completionTime
-      })
-    }
-
-    processQueue(systemQueue, 'System')
-    processQueue(interactiveQueue, 'Interactive')
-    processQueue(batchQueue, 'Batch')
-
-    return { results: results.sort((a, b) => a.id.localeCompare(b.id)), gantt }
-  }
 
   const calculateResults = () => {
     let schedulingResults
     
     switch (algorithm) {
-      case 'fcfs':
-        schedulingResults = fcfsScheduling(processes)
-        break
       case 'sjf':
         schedulingResults = sjfScheduling(processes)
-        break
-      case 'rr':
-        schedulingResults = roundRobinScheduling(processes, timeQuantum)
         break
       case 'priority':
         schedulingResults = priorityScheduling(processes)
         break
-      case 'srtf':
-        schedulingResults = srtfScheduling(processes)
-        break
-      case 'multilevel':
-        schedulingResults = multilevelQueueScheduling(processes)
-        break
       default:
-        schedulingResults = fcfsScheduling(processes)
+        schedulingResults = sjfScheduling(processes)
     }
 
-    const { results: processResults, gantt } = schedulingResults
+    const { results: processResults, gantt, steps } = schedulingResults
     const avgWaitingTime = processResults.reduce((sum, p) => sum + p.waitingTime, 0) / processResults.length
     const avgTurnaroundTime = processResults.reduce((sum, p) => sum + p.turnaroundTime, 0) / processResults.length
 
     setResults({
       processes: processResults,
       avgWaitingTime: avgWaitingTime.toFixed(2),
-      avgTurnaroundTime: avgTurnaroundTime.toFixed(2)
+      avgTurnaroundTime: avgTurnaroundTime.toFixed(2),
+      steps
     })
     setGanttChart(gantt)
   }
@@ -389,19 +200,6 @@ function ProcessScheduling() {
 
   const getAlgorithmExplanation = () => {
     const explanations = {
-      fcfs: (
-        <div>
-          <p><strong>FCFS (First Come First Serve):</strong></p>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Non-preemptive scheduling algorithm</li>
-            <li>Processes are executed in arrival order</li>
-            <li>Simple implementation but can cause convoy effect</li>
-            <li>Long processes can delay shorter ones</li>
-            <li>No starvation as every process gets CPU time</li>
-            <li>Poor average waiting time performance</li>
-          </ul>
-        </div>
-      ),
       sjf: (
         <div>
           <p><strong>SJF (Shortest Job First):</strong></p>
@@ -411,22 +209,7 @@ function ProcessScheduling() {
             <li>Optimal for minimizing average waiting time</li>
             <li>Can cause starvation of longer processes</li>
             <li>Requires knowledge of burst time in advance</li>
-            <li>Difficult to implement in practice</li>
           </ul>
-        </div>
-      ),
-      rr: (
-        <div>
-          <p><strong>Round Robin (RR):</strong></p>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Preemptive scheduling algorithm</li>
-            <li>Each process gets a fixed time quantum to execute</li>
-            <li>After time quantum expires, process moves to end of ready queue</li>
-            <li>Fair allocation of CPU time to all processes</li>
-            <li>Performance depends heavily on time quantum value</li>
-            <li>Better response time for interactive systems</li>
-          </ul>
-          <p className="mt-2"><strong>Time Quantum Used:</strong> {timeQuantum} ms</p>
         </div>
       ),
       priority: (
@@ -435,39 +218,11 @@ function ProcessScheduling() {
           <ul className="list-disc list-inside mt-2 space-y-1">
             <li>Non-preemptive scheduling algorithm</li>
             <li>Processes with higher priority (lower number) execute first</li>
-            <li>Can be implemented with or without preemption</li>
             <li>May cause starvation of low-priority processes</li>
             <li>Priority inversion problem can occur</li>
             <li>Aging technique can prevent starvation</li>
           </ul>
           <p className="mt-2"><strong>Priority Rule:</strong> Lower number = Higher priority</p>
-        </div>
-      ),
-      srtf: (
-        <div>
-          <p><strong>SRTF (Shortest Remaining Time First):</strong></p>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Preemptive version of SJF algorithm</li>
-            <li>Selects process with shortest remaining time</li>
-            <li>Optimal for minimizing average waiting time</li>
-            <li>High context switching overhead</li>
-            <li>Can cause starvation of longer processes</li>
-            <li>Requires continuous monitoring of remaining times</li>
-          </ul>
-        </div>
-      ),
-      multilevel: (
-        <div>
-          <p><strong>Multilevel Queue Scheduling:</strong></p>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Processes divided into separate queues by priority</li>
-            <li>System Queue (Priority 1): Highest priority processes</li>
-            <li>Interactive Queue (Priority 2): Medium priority processes</li>
-            <li>Batch Queue (Priority 3+): Lowest priority processes</li>
-            <li>Each queue can have different scheduling algorithm</li>
-            <li>No process movement between queues</li>
-          </ul>
-          <p className="mt-2"><strong>Queue Priority:</strong> System &gt; Interactive &gt; Batch</p>
         </div>
       )
     }
@@ -482,14 +237,10 @@ function ProcessScheduling() {
         {/* Algorithm Selection */}
         <div className="mb-4 sm:mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Algorithm:</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             {[
-              { value: 'fcfs', label: 'FCFS' },
-              { value: 'sjf', label: 'SJF' },
-              { value: 'rr', label: 'Round Robin' },
-              { value: 'priority', label: 'Priority' },
-              { value: 'srtf', label: 'SRTF' },
-              { value: 'multilevel', label: 'Multilevel Queue' }
+              { value: 'sjf', label: 'SJF (Shortest Job First)' },
+              { value: 'priority', label: 'Priority Scheduling' }
             ].map(alg => (
               <label key={alg.value} className="flex items-center text-gray-900 dark:text-white text-sm sm:text-base">
                 <input
@@ -505,19 +256,7 @@ function ProcessScheduling() {
           </div>
         </div>
 
-        {/* Time Quantum for Round Robin */}
-        {algorithm === 'rr' && (
-          <div className="mb-4 sm:mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Quantum:</label>
-            <input
-              type="number"
-              value={timeQuantum}
-              onChange={(e) => setTimeQuantum(parseInt(e.target.value) || 1)}
-              className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 w-20 text-sm sm:text-base"
-              min="1"
-            />
-          </div>
-        )}
+
 
         {/* Process Input Table */}
         <div className="mb-4 sm:mb-6">
@@ -538,7 +277,7 @@ function ProcessScheduling() {
                   <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Process ID</th>
                   <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Arrival Time</th>
                   <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Burst Time</th>
-                  {(algorithm === 'priority' || algorithm === 'multilevel') && <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Priority</th>}
+                  {algorithm === 'priority' && <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Priority</th>}
                   <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Action</th>
                 </tr>
               </thead>
@@ -564,7 +303,7 @@ function ProcessScheduling() {
                         min="1"
                       />
                     </td>
-                    {(algorithm === 'priority' || algorithm === 'multilevel') && (
+                    {algorithm === 'priority' && (
                       <td className="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2">
                         <input
                           type="number"
@@ -638,7 +377,7 @@ function ProcessScheduling() {
                     <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Process ID</th>
                     <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Arrival Time</th>
                     <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Burst Time</th>
-                    {(algorithm === 'priority' || algorithm === 'multilevel') && <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Priority</th>}
+                    {algorithm === 'priority' && <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Priority</th>}
                     <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Completion Time</th>
                     <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Turnaround Time</th>
                     <th className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">Waiting Time</th>
@@ -651,11 +390,10 @@ function ProcessScheduling() {
                       <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.id}</td>
                       <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.arrivalTime}</td>
                       <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.burstTime}</td>
-                      {(algorithm === 'priority' || algorithm === 'multilevel') && <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.priority}</td>}
+                      {algorithm === 'priority' && <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.priority}</td>}
                       <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.completionTime}</td>
                       <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.turnaroundTime}</td>
                       <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.waitingTime}</td>
-                      {algorithm === 'multilevel' && <td className="border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-2 sm:px-4 py-2 text-center text-xs sm:text-sm whitespace-nowrap">{process.queue}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -694,6 +432,43 @@ function ProcessScheduling() {
                 </div>
               </div>
             </div>
+
+            {/* Step-by-step Calculation */}
+            {results.steps && results.steps.length > 0 && (
+              <div className="bg-green-50 dark:bg-green-900/30 p-3 sm:p-4 rounded-lg">
+                <h4 className="font-semibold text-green-800 dark:text-green-300 mb-3 text-sm sm:text-base">Step-by-Step Calculation</h4>
+                <div className="space-y-3">
+                  {results.steps.map((step, index) => (
+                    <div key={index} className="bg-white dark:bg-gray-800 p-3 rounded-md border border-green-200 dark:border-green-700">
+                      {step.type === 'idle' ? (
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                          <strong>Step {step.step}:</strong> {step.description}
+                        </p>
+                      ) : (
+                        <div className="text-xs sm:text-sm">
+                          <p className="text-green-800 dark:text-green-300 font-semibold mb-2">
+                            Step {step.step}: Process {step.processId} selected
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 dark:text-gray-300">
+                            <div>• Arrival Time (AT) = {step.arrivalTime}</div>
+                            <div>• Burst Time (BT) = {step.burstTime}</div>
+                            {step.priority !== undefined && <div>• Priority = {step.priority}</div>}
+                            <div>• Start Time = {step.startTime}</div>
+                            <div>• Completion Time (CT) = {step.completionTime}</div>
+                            <div>• Turnaround Time (TAT) = {step.turnaroundTime}</div>
+                            <div>• Waiting Time (WT) = {step.waitingTime}</div>
+                          </div>
+                          <div className="mt-2 p-2 bg-green-100 dark:bg-green-900/50 rounded text-gray-800 dark:text-gray-200">
+                            <strong>Calculation:</strong>
+                            <pre className="mt-1 text-xs whitespace-pre-wrap">{step.calculation}</pre>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

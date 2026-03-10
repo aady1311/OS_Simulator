@@ -3,6 +3,8 @@ import Home from './components/Home'
 import ProcessScheduling from './components/ProcessScheduling'
 import DeadlockSimulator from './components/DeadlockSimulator'
 import MemoryAllocation from './components/MemoryAllocation'
+import CloudTaskScheduling from './components/CloudTaskScheduling'
+import FractionalKnapsack from './components/FractionalKnapsack'
 
 function App() {
   const [activeTab, setActiveTab] = useState('home')
@@ -12,8 +14,10 @@ function App() {
   const tabs = [
     { id: 'home', label: 'Home', component: Home },
     { id: 'scheduling', label: 'Process Scheduling', component: ProcessScheduling },
-    { id: 'deadlock', label: 'Deadlock Simulator', component: DeadlockSimulator },
-    { id: 'memory', label: 'Memory Allocation', component: MemoryAllocation }
+    { id: 'cloud', label: 'Cloud Task Scheduling', component: CloudTaskScheduling },
+    { id: 'knapsack', label: 'Fractional Knapsack', component: FractionalKnapsack },
+    // { id: 'deadlock', label: 'Deadlock Simulator', component: DeadlockSimulator },
+    // { id: 'memory', label: 'Memory Allocation', component: MemoryAllocation }
   ]
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || Home
@@ -30,7 +34,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center py-3">
             <h1 className="text-white text-sm sm:text-lg md:text-xl font-bold">
-              OS Simulator - Dynamic Memory & Deadlock
+              Algorithm Optimization Simulator
             </h1>
             
             {/* Desktop Navigation */}
