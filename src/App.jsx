@@ -5,6 +5,7 @@ import DeadlockSimulator from './components/DeadlockSimulator'
 import MemoryAllocation from './components/MemoryAllocation'
 import CloudTaskScheduling from './components/CloudTaskScheduling'
 import FractionalKnapsack from './components/FractionalKnapsack'
+import Quiz from './components/Quiz'
 
 function App() {
   const [activeTab, setActiveTab] = useState('home')
@@ -16,6 +17,7 @@ function App() {
     { id: 'scheduling', label: 'Process Scheduling', component: ProcessScheduling },
     { id: 'cloud', label: 'Cloud Task Scheduling', component: CloudTaskScheduling },
     { id: 'knapsack', label: 'Fractional Knapsack', component: FractionalKnapsack },
+    { id: 'quiz', label: 'Quiz', component: Quiz },
     // { id: 'deadlock', label: 'Deadlock Simulator', component: DeadlockSimulator },
     // { id: 'memory', label: 'Memory Allocation', component: MemoryAllocation }
   ]
@@ -135,7 +137,7 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <ActiveComponent />
+        <ActiveComponent isDarkMode={isDarkMode} />
       </main>
     </div>
   )
