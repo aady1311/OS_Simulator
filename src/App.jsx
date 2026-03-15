@@ -11,6 +11,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('home')
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [currentAlgorithm, setCurrentAlgorithm] = useState(null)
 
   const tabs = [
     { id: 'home', label: 'Home', component: Home },
@@ -137,7 +138,7 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <ActiveComponent isDarkMode={isDarkMode} />
+        <ActiveComponent isDarkMode={isDarkMode} setActiveTab={setActiveTab} setCurrentAlgorithm={setCurrentAlgorithm} initialAlgorithm={currentAlgorithm} />
       </main>
     </div>
   )

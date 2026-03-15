@@ -353,7 +353,7 @@ export default function CreativeQuiz({ isDarkMode = true }) {
 
   if (showReview) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${isDarkMode ? quiz.bgGradient : 'from-gray-100 via-blue-100 to-gray-100'} p-4 md:p-8`}>
+      <div className={`min-h-screen bg-gradient-to-br ${isDarkMode ? quiz.bgGradient : 'from-blue-50 via-white to-blue-50'} p-4 md:p-8`}>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
@@ -380,7 +380,7 @@ export default function CreativeQuiz({ isDarkMode = true }) {
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className={`rounded-2xl p-6 border-2 ${correct ? `bg-green-500/10 border-green-500/50 ${isDarkMode ? '' : 'bg-green-100/50'}` : `bg-red-500/10 border-red-500/50 ${isDarkMode ? '' : 'bg-red-100/50'}`} backdrop-blur-sm`}
+                  className={`rounded-2xl p-6 border-2 ${correct ? 'bg-green-500/10 border-green-500/50' : 'bg-red-500/10 border-red-500/50'} backdrop-blur-sm`}
                 >
                   <div className="flex items-start gap-4">
                     <div className={`p-3 rounded-full ${correct ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
@@ -392,18 +392,18 @@ export default function CreativeQuiz({ isDarkMode = true }) {
                         {a.question}
                       </p>
                       <div className="grid md:grid-cols-2 gap-4 text-sm">
-                        <div className={`p-3 rounded-lg ${correct ? `bg-green-500/20 text-green-300 ${isDarkMode ? '' : 'bg-green-200/70 text-green-800'}` : `bg-red-500/20 text-red-300 ${isDarkMode ? '' : 'bg-red-200/70 text-red-800'}`}`}>
+                        <div className={`p-3 rounded-lg ${correct ? `bg-green-500/20 ${isDarkMode ? 'text-green-300' : 'text-green-800'}` : `bg-red-500/20 ${isDarkMode ? 'text-red-300' : 'text-red-800'}`}`}>
                           <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} block mb-1`}>Your Answer</span>
                           {a.selected}
                         </div>
                         {!correct && (
-                          <div className={`p-3 rounded-lg bg-green-500/20 text-green-300 ${isDarkMode ? '' : 'bg-green-200/70 text-green-800'}`}>
+                          <div className={`p-3 rounded-lg bg-green-500/20 ${isDarkMode ? 'text-green-300' : 'text-green-800'}`}>
                             <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} block mb-1`}>Correct Answer</span>
                             {a.correct}
                           </div>
                         )}
                       </div>
-                      <p className={`mt-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-700'} text-sm italic`}>
+                      <p className={`mt-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-sm italic`}>
                         💡 {a.hint}
                       </p>
                     </div>
@@ -464,7 +464,7 @@ export default function CreativeQuiz({ isDarkMode = true }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setShowHint(!showHint)}
-              className={`mb-6 text-sm ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} flex items-center gap-2 transition-colors`}
+              className="mb-6 text-sm text-gray-400 hover:text-white flex items-center gap-2 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
               {showHint ? "Hide Hint" : "Need a Hint?"}
@@ -492,14 +492,14 @@ export default function CreativeQuiz({ isDarkMode = true }) {
               const showCorrect = selected && isCorrect;
               const showWrong = selected && isSelected && !isCorrect;
               
-              let buttonClass = "p-5 rounded-xl border-2 text-left transition-all duration-300 flex items-center justify-between group ";
+              let buttonClass = `p-5 rounded-xl border-2 text-left transition-all duration-300 flex items-center justify-between group `;
               
               if (!selected) {
                 buttonClass += `bg-${isDarkMode ? 'white/5' : 'gray-100'} border-${isDarkMode ? 'white/10' : 'gray-300'} hover:bg-${isDarkMode ? 'white/10' : 'gray-200'} hover:border-${isDarkMode ? 'white/30' : 'gray-400'} text-${isDarkMode ? 'white' : 'gray-900'}`;
               } else if (showCorrect) {
-                buttonClass += "bg-green-500/20 border-green-500 text-green-300";
+                buttonClass += `bg-green-500/20 border-green-500 text-green-${isDarkMode ? '300' : '800'}`;
               } else if (showWrong) {
-                buttonClass += "bg-red-500/20 border-red-500 text-red-300";
+                buttonClass += `bg-red-500/20 border-red-500 text-red-${isDarkMode ? '300' : '800'}`;
               } else {
                 buttonClass += `bg-${isDarkMode ? 'white/5' : 'gray-100'} border-${isDarkMode ? 'white/10' : 'gray-300'} text-gray-400`;
               }
@@ -516,7 +516,7 @@ export default function CreativeQuiz({ isDarkMode = true }) {
                   <span className="font-semibold text-lg">{option}</span>
                   {showCorrect && <CheckCircle2 className="w-6 h-6 text-green-400" />}
                   {showWrong && <XCircle className="w-6 h-6 text-red-400" />}
-                  {!selected && <ArrowRight className="w-5 h-5 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                  {!selected && <ArrowRight className={`w-5 h-5 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity`} />}
                 </motion.button>
               );
             })}
@@ -546,7 +546,7 @@ export default function CreativeQuiz({ isDarkMode = true }) {
 
         {/* Score Footer */}
         <div className="mt-6 text-center text-gray-400 text-sm">
-          Current Score: <span className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{score}</span> / {questions.length}
+          Current Score: <span className="text-white font-bold text-lg">{score}</span> / {questions.length}
         </div>
       </div>
     </div>

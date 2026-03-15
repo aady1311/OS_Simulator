@@ -1,13 +1,12 @@
 import { useState } from 'react'
 
-function ProcessScheduling() {
-  const [algorithm, setAlgorithm] = useState('sjf')
+function ProcessScheduling({ initialAlgorithm = 'sjf' }) {
+  const [algorithm, setAlgorithm] = useState(initialAlgorithm)
   const [processes, setProcesses] = useState([
     { id: 'P1', arrivalTime: 0, burstTime: 5, priority: 1 },
     { id: 'P2', arrivalTime: 1, burstTime: 3, priority: 2 },
     { id: 'P3', arrivalTime: 2, burstTime: 8, priority: 3 }
   ])
-  const [timeQuantum, setTimeQuantum] = useState(2)
   const [results, setResults] = useState(null)
   const [ganttChart, setGanttChart] = useState([])
 

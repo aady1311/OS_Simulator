@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-function CloudTaskScheduling() {
-  const [algorithm, setAlgorithm] = useState('minmin')
+function CloudTaskScheduling({ initialAlgorithm = 'minmin' }) {
+  const [algorithm, setAlgorithm] = useState(initialAlgorithm)
   const [tasks, setTasks] = useState([
     { id: 'T1', executionTime: [10, 15, 20] },
     { id: 'T2', executionTime: [12, 8, 16] },
