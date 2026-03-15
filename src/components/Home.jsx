@@ -268,25 +268,37 @@ function Home({ setActiveTab, setCurrentAlgorithm }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
-                <Cpu className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
-                CPU Scheduling Algorithms
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-3">
-                CPU scheduling determines which process runs when multiple processes are ready. The goal is to maximize CPU utilization and minimize response time.
-              </p>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center text-gray-700 dark:text-gray-300">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                  <strong>SJF:</strong> Executes shortest jobs first for optimal average waiting time
-                </div>
-                <div className="flex items-center text-gray-700 dark:text-gray-300">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                  <strong>Priority:</strong> Higher priority processes execute before lower priority ones
-                </div>
-              </div>
-            </div>
+<div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-md">
+
+  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+    <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 mr-3" />
+    CPU Scheduling Algorithms
+  </h3>
+
+  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-3">
+    CPU scheduling determines which process runs when multiple processes are ready.
+    The goal is to maximize CPU utilization and minimize response time.
+  </p>
+
+  <div className="space-y-2 text-sm">
+
+    <div className="flex items-start text-gray-700 dark:text-gray-300">
+      <span className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2"></span>
+      <span>
+        <strong>SJF:</strong> Executes shortest jobs first for optimal average waiting time
+      </span>
+    </div>
+
+    <div className="flex items-start text-gray-700 dark:text-gray-300">
+      <span className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2"></span>
+      <span>
+        <strong>Priority:</strong> Higher priority processes execute before lower priority ones
+      </span>
+    </div>
+
+  </div>
+
+</div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
@@ -310,25 +322,37 @@ function Home({ setActiveTab, setCurrentAlgorithm }) {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
-                <Package className="w-6 h-6 text-purple-600 dark:text-purple-400 mr-3" />
-                Greedy Algorithms
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-3">
-                Greedy algorithms make locally optimal choices at each step with the hope of finding a global optimum.
-              </p>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center text-gray-700 dark:text-gray-300">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
-                  <strong>Fractional Knapsack:</strong> Uses value-to-weight ratio for item selection
-                </div>
-                <div className="flex items-center text-gray-700 dark:text-gray-300">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
-                  <strong>Strategy:</strong> Take the best immediate choice, may not always be optimal
-                </div>
-              </div>
-            </div>
+           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-md">
+
+  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+    <Package className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400 mr-3" />
+    Greedy Algorithms
+  </h3>
+
+  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-3">
+    Greedy algorithms make locally optimal choices at each step with the hope of
+    finding a global optimum.
+  </p>
+
+  <div className="space-y-2 text-sm">
+
+    <div className="flex items-start text-gray-700 dark:text-gray-300">
+      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+      <span>
+        <strong>Fractional Knapsack:</strong> Uses value-to-weight ratio for item selection
+      </span>
+    </div>
+
+    <div className="flex items-start text-gray-700 dark:text-gray-300">
+      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+      <span>
+        <strong>Strategy:</strong> Take the best immediate choice, may not always be optimal
+      </span>
+    </div>
+
+  </div>
+
+</div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
